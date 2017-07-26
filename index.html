@@ -297,6 +297,88 @@
 
 
   
+    <article id="post-podspec" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2017/05/17/podspec/" class="article-date">
+      <time datetime="2017-05-17T07:18:33.000Z" itemprop="datePublished">2017-05-17</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/05/17/podspec/">PodSpec私有库</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+          
+        <h3 id="随着公司业务不断发展-由于业务直接的耦合比较严重-无法及时快速地实现各种个性化的需求。下定决心决心进行组件化改造，核心思路是效仿蘑菇街使用Router解耦各个组件，各个组件使用私有库的方式进行管理。Router这部分放在后面的文章进行总结-这篇文章主要总结在制作podspec时候遇到的坑"><a href="#随着公司业务不断发展-由于业务直接的耦合比较严重-无法及时快速地实现各种个性化的需求。下定决心决心进行组件化改造，核心思路是效仿蘑菇街使用Router解耦各个组件，各个组件使用私有库的方式进行管理。Router这部分放在后面的文章进行总结-这篇文章主要总结在制作podspec时候遇到的坑" class="headerlink" title="随着公司业务不断发展,由于业务直接的耦合比较严重,无法及时快速地实现各种个性化的需求。下定决心决心进行组件化改造，核心思路是效仿蘑菇街使用Router解耦各个组件，各个组件使用私有库的方式进行管理。Router这部分放在后面的文章进行总结,这篇文章主要总结在制作podspec时候遇到的坑."></a>随着公司业务不断发展,由于业务直接的耦合比较严重,无法及时快速地实现各种个性化的需求。下定决心决心进行组件化改造，核心思路是效仿蘑菇街使用Router解耦各个组件，各个组件使用私有库的方式进行管理。Router这部分放在后面的文章进行总结,这篇文章主要总结在制作podspec时候遇到的坑.</h3><p>##流程<br>1.第一步先在gitHub或者公司私有云上建立一个仓库，后面各个组件私有库都会push到这上面去，就好像gitHub的Master仓库一样。<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pod repo create xxxx(自己命名)    http:xxxxx.git(私有库地址)</div></pre></td></tr></table></figure></p>
+<p>2.第二步先将项目中Tools相关的类，单独创建了一个project,放到里面进行编译，解决问题。</p>
+<p>3.Tools Project编译成功后,push到github或者公司私有库上面。然后创建podspec文件<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pod spec create xxxx.podspecs</div></pre></td></tr></table></figure></p>
+<p>4.打Tag.修改xxxx.podspecs文件</p>
+<p>5.校验podspecs<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">1.pod spec lint xxxx.podspecs  --参数    （校验tag上的文件）</div><div class="line">2.pod lib lint  --参数   （校验本地的文件）</div></pre></td></tr></table></figure></p>
+<p>6.返回修改之道validate success.然后上传到第一步命名的私有库上面<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">1.pod repo push xxxx(第一步自己命名)   xxxx.podspecs --参数</div></pre></td></tr></table></figure></p>
+<p>7.验证是否上传成功,是否能搜索到<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">1.pod search xxxx</div></pre></td></tr></table></figure></p>
+<h3 id="问题汇总"><a href="#问题汇总" class="headerlink" title="问题汇总"></a>问题汇总</h3><p>1.normal i386 objective-c com.apple.compilers.llvm.clang.1_0.compiler<br>    ToolsModule (0.0.12)</p>
+<pre><code>- ERROR | [ToolsModule/PayFramework] xcodebuild: Returned an unsuccessful exit code.
+</code></pre><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">方向:多半是因为没有找到需要引用的xxx.framework xxx.a导致的,也有可能是依赖系统库导致.</div></pre></td></tr></table></figure>
+<p>2.podspec中需要依赖自己定义的私有库<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pod lib lint --allow-warnings --use-libraries --sources=http://gitlab.ngarihealth.com/lintao/ios-space,master  --verbose --no-clean</div></pre></td></tr></table></figure></p>
+<p>3.pod 命令 参数<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pod lib lint --help 关于pod的相关参数</div></pre></td></tr></table></figure></p>
+<p>4.需要引用pod管理的第三方的头文件.h<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">s.vendored_frameworks = [‘Pod/xxx/xxx.framwok’]</div></pre></td></tr></table></figure></p>
+<p>5.验证通过的podspec文件，进行打包<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">pod package ToolsModule.podspec  --library --force --spec-sources=http://lintao@gitlab.ngarihealth.com/lintao/ios-space.git,https://github.com/CocoaPods/Specs.git --no-mangle</div></pre></td></tr></table></figure></p>
+<h3 id="操作流程"><a href="#操作流程" class="headerlink" title="操作流程"></a>操作流程</h3><p><a href="https://macacajs.com/zh/" target="_blank" rel="external">Macaca中文官网</a></p>
+<h3 id="环境配置-顺序无关"><a href="#环境配置-顺序无关" class="headerlink" title="环境配置(顺序无关)"></a>环境配置(顺序无关)</h3><p>请安装 Node.js v6.0 或者更高版本，装好 Node.js 后命令行里就已经集成了 npm 工具，为了提高安装模块的速度，请使用国内的 cnpm,我自己使用的是npm命令，速度也还可以.<br>以及Mac中 使用brew命令需要安装Homebrew（一款常用的 MacOS 的包管理器），请按照<a href="https://brew.sh/" target="_blank" rel="external">官网</a>提示安装。</p>
+<p>1.需要安装 usbmuxd 以便于通过 USB 通道测试 iOS 真机，不需要测试真机则不用安装</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$  brew install usbmuxd</div></pre></td></tr></table></figure>
+<p>2.应用中如果包含Weview</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$  brew install ios-webkit-debug-proxy</div></pre></td></tr></table></figure>
+<p>3.安装 carthage</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$  brew install carthage</div></pre></td></tr></table></figure>
+<p>4.安装Macaca-cli  Macaca-client Macaca-ios(驱动)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">$   npm i  macaca-cli -g</div><div class="line">$   npm i  macaca-client -g</div><div class="line">$   npm i  macaca-ios -g</div></pre></td></tr></table></figure>
+<p>5.自己在摸索中还安装了devtool ios-deploy.目前还不知道具体作用</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">$   npm i -g devtool@1.11.2</div><div class="line">$   npm i  ios-deploy -g</div></pre></td></tr></table></figure>
+<p>6.然后下载了<a href="https://github.com/xudafeng/ios-app-bootstrap" target="_blank" rel="external">ios-app-bootstrap-master</a>,<a href="https://github.com/libimobiledevice/libimobiledevice" target="_blank" rel="external">libimobiledevice-master</a>,<a href="https://github.com/baozhida/MacacaAutomation" target="_blank" rel="external">MacacaAutomation-master</a></p>
+<h3 id="目前进行不下去的问题"><a href="#目前进行不下去的问题" class="headerlink" title="目前进行不下去的问题"></a>目前进行不下去的问题</h3><p>1.bootstrap 怎么用？<br>2.libimobiledevice里面的autogen.sh报错？<br>3.MacacaAutomation 重新签名，并没有找到一下文件？<br>/usr/local/lib/node_modules/app-inspector/node_modules/.1.0.41@webdriveragent/WebDriverAgent<br>/usr/local/lib/node_modules/macaca-ios/node_modules/.1.0.41@webdriveragent/WebDriverAgent</p>
+
+      
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+
+      
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+
+
+  
     <article id="post-firstBlog" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
